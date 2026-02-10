@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Own Your AI — A Procurement Performance Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & DEFAULTS ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #334155;
+  background: #ffffff;
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== CSS CUSTOM PROPERTIES ===== */
+:root {
+  --navy: #0f1a2e;
+  --navy-light: #1a2742;
+  --teal: #0891b2;
+  --teal-light: #06b6d4;
+  --teal-bg: #ecfeff;
+  --gold: #d97706;
+  --gold-light: #fbbf24;
+  --gold-bg: #fffbeb;
+  --slate: #334155;
+  --slate-light: #64748b;
+  --slate-lighter: #94a3b8;
+  --bg-white: #ffffff;
+  --bg-off: #f8fafc;
+  --bg-soft: #f1f5f9;
+  --border: #e2e8f0;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04);
+  --shadow-xl: 0 20px 40px -10px rgba(0,0,0,0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --max-width: 1080px;
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-light));
+  z-index: 1000;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+/* ===== DOT NAVIGATION ===== */
+.dot-nav {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dot-nav a {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--slate-lighter);
+  opacity: 0.4;
+  transition: var(--transition);
+  display: block;
+  position: relative;
+}
+.dot-nav a.active {
+  background: var(--teal);
+  opacity: 1;
+  transform: scale(1.3);
+}
+.dot-nav a:hover {
+  opacity: 0.8;
+  transform: scale(1.2);
+}
+.dot-nav a .dot-tooltip {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--navy);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.dot-nav a:hover .dot-tooltip { opacity: 1; }
+
+/* ===== TYPOGRAPHY ===== */
+h1, h2, h3, h4 { font-family: 'Space Grotesk', 'Inter', sans-serif; color: var(--navy); line-height: 1.2; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.7rem, 3.5vw, 2.4rem); font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: 600; }
+h4 { font-size: 1.1rem; font-weight: 600; }
+p { max-width: 680px; }
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--teal);
+  margin-bottom: 12px;
+}
+.highlight { color: var(--teal); }
+.highlight-gold { color: var(--gold); }
+.lead { font-size: 1.15rem; color: var(--slate-light); line-height: 1.8; }
+
+/* ===== LAYOUT ===== */
+section {
+  padding: 88px 24px;
+  position: relative;
+}
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+.section-alt { background: var(--bg-off); }
+
+/* ===== ANIMATION BASE ===== */
+[data-animate] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+[data-animate].visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+[data-animate][data-delay="1"] { transition-delay: 0.1s; }
+[data-animate][data-delay="2"] { transition-delay: 0.2s; }
+[data-animate][data-delay="3"] { transition-delay: 0.3s; }
+[data-animate][data-delay="4"] { transition-delay: 0.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-animate] { opacity: 1; transform: none; transition: none; }
+}
+
+/* ===== FOCUS STATES ===== */
+a:focus-visible, button:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.hero-cta:focus-visible, .cta-button:focus-visible {
+  outline: 2px solid var(--teal-light);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(8,145,178,0.2);
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+  background: var(--navy);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 80px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 800px;
+  height: 800px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(8,145,178,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero .container { position: relative; z-index: 1; }
+.hero h1 {
+  color: #ffffff;
+  font-size: clamp(2.4rem, 5.5vw, 3.6rem);
+  max-width: 800px;
+  margin-bottom: 24px;
+}
+.hero .lead {
+  color: rgba(255,255,255,0.7);
+  max-width: 600px;
+  margin-bottom: 40px;
+  font-size: 1.15rem;
+}
+.hero .eyebrow { color: var(--teal-light); }
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--teal);
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition);
+  border: none;
+  cursor: pointer;
+}
+.hero-cta:hover { background: var(--teal-light); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(8,145,178,0.3); }
+.hero-cta svg { transition: transform 0.3s; }
+.hero-cta:hover svg { transform: translateY(3px); }
+
+/* ===== PROBLEM SECTION ===== */
+.flow-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 48px 0 32px;
+  flex-wrap: wrap;
+}
+.flow-box {
+  background: var(--bg-white);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  text-align: center;
+  min-width: 160px;
+  transition: var(--transition);
+  cursor: default;
+  position: relative;
+}
+.flow-box:hover { border-color: var(--teal); box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+.flow-box h4 { font-size: 0.95rem; margin-bottom: 4px; }
+.flow-box p { font-size: 0.82rem; color: var(--slate-light); max-width: none; }
+.flow-arrow {
+  font-size: 1.4rem;
+  color: var(--slate-lighter);
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+.flow-loop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 10px;
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.flow-loop svg { flex-shrink: 0; }
+
+.problem-consequence {
+  background: var(--gold-bg);
+  border-left: 3px solid var(--gold);
+  padding: 20px 24px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-top: 32px;
+  max-width: 680px;
+}
+.problem-consequence p { color: var(--slate); font-weight: 500; font-size: 0.95rem; max-width: none; }
+
+/* ===== INSIGHT SECTION ===== */
+.insight-quote {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.25;
+  margin: 32px 0;
+  max-width: 700px;
+  position: relative;
+  padding-left: 24px;
+  border-left: 4px solid var(--teal);
+}
+.insight-timeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+  margin: 40px 0;
+  flex-wrap: wrap;
+}
+.timeline-item {
+  flex: 1;
+  min-width: 200px;
+  text-align: center;
+  position: relative;
+  padding: 24px 16px;
+  background: var(--bg-white);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.timeline-item .year {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--teal);
+  display: block;
+  margin-bottom: 8px;
+}
+.timeline-item p { font-size: 0.9rem; color: var(--slate-light); max-width: none; }
+
+.insight-implication {
+  background: var(--navy);
+  color: #fff;
+  padding: 28px 32px;
+  border-radius: var(--radius);
+  margin-top: 40px;
+  max-width: 680px;
+}
+.insight-implication p { color: rgba(255,255,255,0.85); max-width: none; }
+.insight-implication strong { color: var(--teal-light); }
+
+/* ===== DIFFERENT WAY SECTION ===== */
+.convergence {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  align-items: center;
+  margin: 48px 0 40px;
+}
+.convergence-streams {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.stream-card {
+  background: var(--bg-white);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  transition: var(--transition);
+  cursor: pointer;
+}
+.stream-card:hover, .stream-card.active { border-color: var(--teal); background: var(--teal-bg); }
+.stream-card h4 { font-size: 0.95rem; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.stream-card h4 .stream-icon { color: var(--teal); font-size: 1.1rem; }
+.stream-card p { font-size: 0.85rem; color: var(--slate-light); max-width: none; }
+.stream-card .stream-detail { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--slate); }
+.stream-card.active .stream-detail { display: block; }
+
+.convergence-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--teal);
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+.convergence-result {
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.convergence-result h3 { color: #fff; font-size: 1.3rem; }
+.result-metric {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.8);
+}
+.result-metric .metric-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--teal-light);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ===== PHASES SECTION ===== */
+.phases-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 48px;
+}
+.phase-card {
+  background: var(--bg-white);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: var(--transition);
+}
+.phase-card:hover { box-shadow: var(--shadow-lg); }
+.phase-header {
+  padding: 24px 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  user-select: none;
+  transition: background 0.2s;
+}
+.phase-header:hover { background: var(--bg-off); }
+.phase-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.phase-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--teal-bg);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.phase-card.expanded .phase-number { background: var(--teal); color: #fff; }
+.phase-title h3 { margin-bottom: 2px; }
+.phase-title p { font-size: 0.88rem; color: var(--slate-light); max-width: none; }
+.phase-chevron {
+  transition: transform 0.35s;
+  color: var(--slate-lighter);
+  flex-shrink: 0;
+}
+.phase-card.expanded .phase-chevron { transform: rotate(180deg); color: var(--teal); }
+.phase-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.phase-body-inner {
+  padding: 0 28px 28px;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+.phase-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.phase-detail-block h4 { font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--teal); margin-bottom: 8px; }
+.phase-detail-block p, .phase-detail-block li { font-size: 0.9rem; color: var(--slate); line-height: 1.65; max-width: none; }
+.phase-detail-block ul { list-style: none; padding: 0; }
+.phase-detail-block li { padding-left: 18px; position: relative; margin-bottom: 6px; }
+.phase-detail-block li::before { content: ''; position: absolute; left: 0; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+.phase-example {
+  background: var(--bg-off);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  margin-top: 16px;
+}
+.phase-example .example-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 8px; }
+.phase-example p { font-size: 0.9rem; color: var(--slate); max-width: none; }
+
+/* ===== DIFFERENTIATORS SECTION ===== */
+.diff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 40px;
+}
+.diff-tile {
+  background: var(--bg-white);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.diff-tile:hover { border-color: var(--teal); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.diff-tile.active { border-color: var(--teal); background: var(--teal-bg); }
+.diff-tile-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--teal-bg);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  font-size: 1.2rem;
+}
+.diff-tile h4 { font-size: 1rem; margin-bottom: 6px; }
+.diff-tile .diff-summary { font-size: 0.88rem; color: var(--slate-light); max-width: none; }
+.diff-tile .diff-detail {
+  display: none;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 0.88rem;
+  color: var(--slate);
+  line-height: 1.65;
+  max-width: none;
+}
+.diff-tile.active .diff-detail { display: block; }
+
+/* ===== COMPARISON SECTION ===== */
+.toggle-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0 32px;
+}
+.toggle-group {
+  display: inline-flex;
+  background: var(--bg-soft);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  gap: 4px;
+}
+.toggle-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--slate-light);
+  transition: var(--transition);
+  font-family: inherit;
+}
+.toggle-btn.active {
+  background: var(--bg-white);
+  color: var(--navy);
+  box-shadow: var(--shadow-sm);
+}
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.comparison-col {
+  border-radius: var(--radius);
+  padding: 32px;
+  transition: var(--transition);
+}
+.comparison-col.rent {
+  background: var(--bg-off);
+  border: 2px solid var(--border);
+}
+.comparison-col.own {
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  border: 2px solid var(--navy);
+  color: #fff;
+}
+.comparison-col h3 { margin-bottom: 20px; font-size: 1.2rem; }
+.comparison-col.own h3 { color: #fff; }
+.comparison-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.comparison-item .icon-neg { color: var(--gold); flex-shrink: 0; font-size: 1.1rem; }
+.comparison-item .icon-pos { color: var(--teal-light); flex-shrink: 0; font-size: 1.1rem; }
+.comparison-col.own .comparison-item { color: rgba(255,255,255,0.85); }
+.comparison-col.dimmed { opacity: 0.55; transform: scale(0.97); }
+.comparison-bottom {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.comparison-col.rent .comparison-bottom { border-top-color: var(--border); color: var(--slate); }
+.comparison-col.own .comparison-bottom { color: var(--teal-light); }
+
+/* ===== STATS SECTION ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin: 48px 0 40px;
+}
+.stat-card {
+  text-align: center;
+  padding: 32px 24px;
+  background: var(--bg-white);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  transition: var(--transition);
+}
+.stat-card:hover { border-color: var(--teal); box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+.stat-number {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.stat-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.stat-desc {
+  font-size: 0.82rem;
+  color: var(--slate-light);
+}
+
+.proof-points {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 680px;
+}
+.proof-item {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.proof-item:hover { border-color: var(--teal); }
+.proof-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--navy);
+  user-select: none;
+}
+.proof-chevron {
+  transition: transform 0.3s;
+  color: var(--slate-lighter);
+  flex-shrink: 0;
+}
+.proof-item.expanded .proof-chevron { transform: rotate(180deg); color: var(--teal); }
+.proof-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.proof-body-inner {
+  padding: 0 20px 16px;
+  font-size: 0.88rem;
+  color: var(--slate);
+  line-height: 1.65;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+/* ===== PLATFORM SECTION ===== */
+.platform-box {
+  background: var(--bg-off);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  max-width: 680px;
+  margin-top: 32px;
+}
+.platform-logos {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.platform-tag {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--slate);
+}
+
+/* ===== CTA SECTION ===== */
+.cta-section {
+  background: var(--navy);
+  text-align: center;
+}
+.cta-section h2 { color: #fff; margin-bottom: 16px; }
+.cta-section .lead { color: rgba(255,255,255,0.7); margin: 0 auto 40px; }
+.cta-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius);
+  padding: 40px;
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: left;
+}
+.cta-card h3 { color: #fff; margin-bottom: 16px; font-size: 1.15rem; }
+.cta-card p { color: rgba(255,255,255,0.7); font-size: 0.9rem; max-width: none; margin-bottom: 16px; line-height: 1.65; }
+.cta-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 28px;
+}
+.cta-list li {
+  color: rgba(255,255,255,0.8);
+  font-size: 0.9rem;
+  padding: 6px 0 6px 22px;
+  position: relative;
+}
+.cta-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--teal-light);
+}
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--teal);
+  color: #fff;
+  padding: 14px 32px;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition);
+}
+.cta-button:hover { background: var(--teal-light); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(8,145,178,0.3); }
+
+.cta-footer {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1023px) {
+  .dot-nav { display: none; }
+  .convergence { grid-template-columns: 1fr; }
+  .convergence-arrow { flex-direction: row; padding: 8px 0; }
+  .phase-grid { grid-template-columns: 1fr; }
+  .comparison-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 767px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 639px) {
+  section { padding: 56px 20px; }
+  .hero { padding: 60px 20px; min-height: auto; padding-top: 100px; padding-bottom: 80px; }
+  .flow-diagram { flex-direction: column; align-items: stretch; }
+  .flow-arrow { transform: rotate(90deg); padding: 4px 0; text-align: center; }
+  .flow-box { min-width: auto; }
+  .insight-timeline { flex-direction: column; gap: 16px; }
+  .timeline-item { min-width: auto; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .diff-grid { grid-template-columns: 1fr; }
+  .toggle-group { flex-direction: column; width: 100%; }
+  .toggle-btn { width: 100%; text-align: center; }
+  .cta-card { padding: 28px 20px; }
+  .convergence-result { padding: 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Dot Navigation -->
+<nav class="dot-nav" id="dotNav">
+  <a href="#hero"><span class="dot-tooltip">Top</span></a>
+  <a href="#problem"><span class="dot-tooltip">The Problem</span></a>
+  <a href="#insight"><span class="dot-tooltip">The Insight</span></a>
+  <a href="#different"><span class="dot-tooltip">A Different Way</span></a>
+  <a href="#phases"><span class="dot-tooltip">How It Works</span></a>
+  <a href="#differentiators"><span class="dot-tooltip">What's Different</span></a>
+  <a href="#comparison"><span class="dot-tooltip">The Choice</span></a>
+  <a href="#track-record"><span class="dot-tooltip">Track Record</span></a>
+  <a href="#cta"><span class="dot-tooltip">Let's Talk</span></a>
+</nav>
+
+<!-- ==========================================
+     SECTION 1: HERO
+     ========================================== -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="eyebrow" data-animate>Own Your AI</div>
+    <h1 data-animate data-delay="1">Most Organizations Get AI Adoption Completely Wrong</h1>
+    <p class="lead" data-animate data-delay="2">They buy training, hire consultants, and procure tools &mdash; creating dependency at every stage. There's a fundamentally different approach.</p>
+    <a href="#problem" class="hero-cta" data-animate data-delay="3">
+      See why
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ==========================================
+     SECTION 2: THE PROBLEM
+     ========================================== -->
+<section id="problem" class="section-alt">
+  <div class="container">
+    <div class="eyebrow" data-animate>The Problem</div>
+    <h2 data-animate data-delay="1">The Sequential Model Creates Permanent Dependency</h2>
+    <p class="lead" data-animate data-delay="2">Most organizations treat AI adoption as a purchasing decision. Each step creates a new dependency:</p>
+
+    <div class="flow-diagram" data-animate data-delay="3">
+      <div class="flow-box">
+        <h4>Buy Training</h4>
+        <p>Build literacy in isolation from real work</p>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-box">
+        <h4>Hire Consultants</h4>
+        <p>Redesign workflows in PowerPoint decks</p>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-box">
+        <h4>Procure Tools</h4>
+        <p>Built without user input, abandoned in months</p>
+      </div>
+    </div>
+
+    <div class="flow-loop" data-animate data-delay="4">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      Cycle repeats &mdash; dependency compounds
+    </div>
+
+    <div class="problem-consequence" data-animate data-delay="4">
+      <p>Practitioners learn concepts but not application. They return to their desks and revert to old patterns because the training wasn't anchored to the work they actually do.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     SECTION 3: THE INSIGHT
+     ========================================== -->
+<section id="insight">
+  <div class="container">
+    <div class="eyebrow" data-animate>The Insight</div>
+    <h2 data-animate data-delay="1">Here's What Most Organizations Don't Realize</h2>
+
+    <div class="insight-quote" data-animate data-delay="2">No one is an AI expert.</div>
+
+    <div class="insight-timeline" data-animate data-delay="3">
+      <div class="timeline-item">
+        <span class="year">2022</span>
+        <p>ChatGPT launches. Gemini, Claude, and the current generation of AI tools become available to <strong>everyone simultaneously</strong>.</p>
+      </div>
+      <div class="timeline-item">
+        <span class="year">Same</span>
+        <p>The technology didn't go to consultants first, then trickle down. It arrived at the same time for everyone.</p>
+      </div>
+      <div class="timeline-item">
+        <span class="year">Now</span>
+        <p>The AI capability gap is widening between organizations that built internal fluency early and those still outsourcing the learning curve.</p>
+      </div>
+    </div>
+
+    <div class="insight-implication" data-animate data-delay="4">
+      <p>When organizations hire consultants to "bring AI expertise," they're often <strong>paying for someone else to learn on their dime</strong>. The consultant builds fluency through your work, on your budget, then takes that capability to the next client.</p>
+    </div>
+
+    <p style="margin-top: 32px; font-weight: 600; color: var(--navy); font-size: 1.05rem;" data-animate data-delay="4">The strategic choice isn't whether to adopt AI. It's whether to <span class="highlight">own the capability</span> or rent it indefinitely.</p>
+  </div>
+</section>
+
+<!-- ==========================================
+     SECTION 4: A DIFFERENT WAY
+     ========================================== -->
+<section id="different" class="section-alt">
+  <div class="container">
+    <div class="eyebrow" data-animate>A Different Way</div>
+    <h2 data-animate data-delay="1">Learning in Real Work Context</h2>
+    <p class="lead" data-animate data-delay="2">Fluency is only developed when instruction is delivered in real work context, not in isolation. Learning, workflow change, and tool creation don't happen in sequence. They happen as one activity.</p>
+
+    <div class="convergence" data-animate data-delay="3">
+      <div class="convergence-streams">
+        <div class="stream-card" data-stream="instruction">
+          <h4><span class="stream-icon">&#9670;</span> Instruction</h4>
+          <p>AI fundamentals, prompt engineering, agent building</p>
+          <div class="stream-detail">Practitioners don't learn "how to write effective prompts" in the abstract. They learn by prompting AI to draft real deliverables they're actively working on &mdash; then refine, iterate, and build agents that codify their best approaches.</div>
+        </div>
+        <div class="stream-card" data-stream="workflow">
+          <h4><span class="stream-icon">&#9670;</span> Workflow Change</h4>
+          <p>Redesigning how specific tasks get done</p>
+          <div class="stream-detail">Sourcing teams bring RFx development, market intelligence, and negotiation scenarios. Contracting teams bring live agreements, risk analysis, and term drafting. The workflows being redesigned are the actual workflows, not hypothetical ones.</div>
+        </div>
+        <div class="stream-card" data-stream="tooling">
+          <h4><span class="stream-icon">&#9670;</span> Tool Building</h4>
+          <p>Creating the agents and automations that execute the work</p>
+          <div class="stream-detail">The tools being built are the actual tools practitioners will use Monday morning. No documentation handoffs. No pre-built solutions delivered to them. They build, own, understand, and can evolve what they create.</div>
+        </div>
+      </div>
+      <div class="convergence-arrow">&#10230;</div>
+      <div class="convergence-result">
+        <h3>Integrated Learning</h3>
+        <div class="result-metric"><span class="metric-dot"></span> Day 2 usage, not months-later adoption</div>
+        <div class="result-metric"><span class="metric-dot"></span> 30&ndash;79% task-level speed improvements</div>
+        <div class="result-metric"><span class="metric-dot"></span> Quality uplift in deliverables</div>
+        <div class="result-metric"><span class="metric-dot"></span> Workflows that stick &mdash; because the team built them</div>
+      </div>
+    </div>
+
+    <p data-animate data-delay="4" style="font-size: 0.95rem; color: var(--slate);">Click any stream above to see how it works in practice. &uarr;</p>
+  </div>
+</section>
+
+<!-- ==========================================
+     SECTION 5: HOW IT WORKS — 3 PHASES
+     ========================================== -->
+<section id="phases">
+  <div class="container">
+    <div class="eyebrow" data-animate>How It Works</div>
+    <h2 data-animate data-delay="1">Three Phases of Capability Building</h2>
+    <p class="lead" data-animate data-delay="2">A structured engagement that evolves from foundation training to self-sustaining capability. Click each phase to explore.</p>
+
+    <div class="phases-container">
+      <!-- Phase 1 -->
+      <div class="phase-card" data-animate data-delay="2">
+        <div class="phase-header" data-phase="1" role="button" tabindex="0" aria-expanded="false">
+          <div class="phase-header-left">
+            <div class="phase-number">1</div>
+            <div class="phase-title">
+              <h3>Foundation Fluency</h3>
+              <p>Learn by doing on real work. Build simple agents. Change how tasks get done.</p>
+            </div>
+          </div>
+          <svg class="phase-chevron" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="phase-body">
+          <div class="phase-body-inner">
+            <div class="phase-grid">
+              <div class="phase-detail-block">
+                <h4>What Practitioners Learn</h4>
+                <ul>
+                  <li>Chatbot mastery and prompt engineering</li>
+                  <li>Custom agent building</li>
+                  <li>AI-augmented research and drafting</li>
+                  <li>Workflow redesign for AI integration</li>
+                </ul>
+              </div>
+              <div class="phase-detail-block">
+                <h4>What Gets Delivered</h4>
+                <ul>
+                  <li>Validated capability &mdash; clear visibility into who "gets it"</li>
+                  <li>Working tools built by the team, not delivered to them</li>
+                  <li>Changed workflows already in use</li>
+                  <li>Foundation for deeper capability building</li>
+                </ul>
+              </div>
+            </div>
+            <div class="phase-example">
+              <div class="example-label">Real Example</div>
+              <p>A contracting practitioner doesn't learn "how to write prompts" in the abstract. They learn by prompting AI to draft a liability limitation clause for a cloud services agreement they're actually negotiating. They refine the prompt. They build an agent that codifies their best version. They redesign their drafting workflow to use it.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="phase-card" data-animate data-delay="3">
+        <div class="phase-header" data-phase="2" role="button" tabindex="0" aria-expanded="false">
+          <div class="phase-header-left">
+            <div class="phase-number">2</div>
+            <div class="phase-title">
+              <h3>Augmented Execution</h3>
+              <p>Develop proficiency through hands-on collaboration on live deliverables.</p>
+            </div>
+          </div>
+          <svg class="phase-chevron" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="phase-body">
+          <div class="phase-body-inner">
+            <div class="phase-grid">
+              <div class="phase-detail-block">
+                <h4>What This Looks Like</h4>
+                <ul>
+                  <li>Working alongside teams on live work &mdash; co-creating in real time</li>
+                  <li>Auditing and refining as work happens</li>
+                  <li>Pushing to more sophisticated applications as fluency grows</li>
+                  <li>Preventing dependency through demonstration, not execution</li>
+                </ul>
+              </div>
+              <div class="phase-detail-block">
+                <h4>What Determines Success</h4>
+                <ul>
+                  <li>Curiosity and critical thinking from practitioners</li>
+                  <li>Willingness to challenge old workflows</li>
+                  <li>Authority to implement changes</li>
+                  <li>Organizational commitment to sustain the effort</li>
+                </ul>
+              </div>
+            </div>
+            <div class="phase-example">
+              <div class="example-label">How It's Different</div>
+              <p>This isn't coaching from the sidelines. Expert support works alongside the team day-to-day on actual deliverables &mdash; showing how to do it while doing it together, not doing it for them. The engagement evolves from training to performance partnership.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="phase-card" data-animate data-delay="4">
+        <div class="phase-header" data-phase="3" role="button" tabindex="0" aria-expanded="false">
+          <div class="phase-header-left">
+            <div class="phase-number">3</div>
+            <div class="phase-title">
+              <h3>Advanced Capability Development</h3>
+              <p>High-potential individuals learn methodical app development using agentic coding platforms.</p>
+            </div>
+          </div>
+          <svg class="phase-chevron" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="phase-body">
+          <div class="phase-body-inner">
+            <div class="phase-grid">
+              <div class="phase-detail-block">
+                <h4>What Gets Built</h4>
+                <ul>
+                  <li>Custom workflows and automation</li>
+                  <li>Multi-agent systems for complex S2C processes</li>
+                  <li>Sophisticated applications without engineering backgrounds</li>
+                  <li>The internal capability engine for the organization</li>
+                </ul>
+              </div>
+              <div class="phase-detail-block">
+                <h4>Who Gets Selected</h4>
+                <ul>
+                  <li>Performance in Phases 1 and 2 determines selection</li>
+                  <li>Based on adoption speed and use case sophistication</li>
+                  <li>How far they push beyond what's taught</li>
+                  <li>This isn't for everyone &mdash; but those who get here become the engine</li>
+                </ul>
+              </div>
+            </div>
+            <div class="phase-example">
+              <div class="example-label">The Focus</div>
+              <p>This isn't vibe coding. The focus is on methodology: how to approach app development with AI coding tools, how to architect solutions, how to iterate and debug, how to build maintainable systems. These practitioners aren't just using AI &mdash; they're building the solutions the organization needs without external consultants.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     SECTION 6: WHAT MAKES THIS DIFFERENT
+     ========================================== -->
+<section id="differentiators" class="section-alt">
+  <div class="container">
+    <div class="eyebrow" data-animate>What Makes This Different</div>
+    <h2 data-animate data-delay="1">Five Things You Won't Get Anywhere Else</h2>
+    <p class="lead" data-animate data-delay="2">Click any tile to see the full picture.</p>
+
+    <div class="diff-grid">
+      <div class="diff-tile" data-animate data-delay="2">
+        <div class="diff-tile-icon">&#9881;</div>
+        <h4>Not Generic Training</h4>
+        <p class="diff-summary">Every example, agent, and workflow is built from your actual work.</p>
+        <div class="diff-detail">Sourcing teams learn on their RFx templates, supplier research methods, and negotiation scenarios. Contracting teams on their paper, risk tolerance, and commercial standards. The learning is inseparable from the work.</div>
+      </div>
+      <div class="diff-tile" data-animate data-delay="2">
+        <div class="diff-tile-icon">&#9997;</div>
+        <h4>Not About Artifacts</h4>
+        <p class="diff-summary">No documentation handoffs, prompt libraries, or pre-built tools.</p>
+        <div class="diff-detail">Teams build everything during the engagement, which means they own it, understand it, and can evolve it. Nothing gets "delivered" and left to gather dust. The artifacts are a byproduct of changed behavior, not the goal.</div>
+      </div>
+      <div class="diff-tile" data-animate data-delay="3">
+        <div class="diff-tile-icon">&#10003;</div>
+        <h4>Not Consultant Dependency</h4>
+        <p class="diff-summary">If execution is being done for the client, the engagement is failing.</p>
+        <div class="diff-detail">The objective is eliminating the need for external execution while keeping teams at the frontier of what's possible. Expert support pushes the boundary &mdash; it doesn't become the boundary.</div>
+      </div>
+      <div class="diff-tile" data-animate data-delay="3">
+        <div class="diff-tile-icon">&#9733;</div>
+        <h4>Behavioral Change Is Explicit</h4>
+        <p class="diff-summary">Technical training alone is insufficient. If work doesn't change, training evaporates.</p>
+        <div class="diff-detail">Mindset shift, workflow adaptation, and performance improvement are the outcome &mdash; not AI literacy for its own sake. If practitioners return to their desks and work the same way, the engagement has failed regardless of what they learned.</div>
+      </div>
+      <div class="diff-tile" data-animate data-delay="4">
+        <div class="diff-tile-icon">&#9830;</div>
+        <h4>Multi-Modal Learning</h4>
+        <p class="diff-summary">Practitioners learn by thinking, doing, observing, and applying simultaneously.</p>
+        <div class="diff-detail">Not through lectures. Not through watching demos. Through reshaping actual work in real time. This is how fluency develops &mdash; the same way you learned your first language: by using it in context, not studying grammar rules.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     SECTION 7: THE CHOICE — OWN VS. RENT
+     ========================================== -->
+<section id="comparison">
+  <div class="container">
+    <div class="eyebrow" data-animate>The Choice</div>
+    <h2 data-animate data-delay="1">Where Should the Learning Happen?</h2>
+    <p class="lead" data-animate data-delay="2">Organizations face a fundamental decision about where to deploy AI investment. Toggle between the two approaches.</p>
+
+    <div class="toggle-wrapper" data-animate data-delay="3">
+      <div class="toggle-group">
+        <button class="toggle-btn" data-toggle="rent" aria-pressed="false">Consultants First</button>
+        <button class="toggle-btn active" data-toggle="own" aria-pressed="true">People First</button>
+      </div>
+    </div>
+
+    <div class="comparison-grid" data-animate data-delay="3">
+      <div class="comparison-col rent dimmed" id="rentCol">
+        <h3>Invest in Consultants First</h3>
+        <div class="comparison-item">
+          <span class="icon-neg">&#9679;</span>
+          <span>Paying for someone else to learn AI skills on your budget</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-neg">&#9679;</span>
+          <span>Immediate capability but no knowledge transfer</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-neg">&#9679;</span>
+          <span>Ongoing dependency for execution</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-neg">&#9679;</span>
+          <span>Cost scales linearly with usage</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-neg">&#9679;</span>
+          <span>Capability evaporates when consultants leave</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-neg">&#9679;</span>
+          <span>Black box tools and methodologies</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-neg">&#9679;</span>
+          <span>Practitioners become administrators of consultant-delivered work</span>
+        </div>
+        <div class="comparison-bottom">Permanent operating expense for capability that should be a capital investment.</div>
+      </div>
+
+      <div class="comparison-col own" id="ownCol">
+        <h3>Invest in People First</h3>
+        <div class="comparison-item">
+          <span class="icon-pos">&#9679;</span>
+          <span>Your team develops the capability, you retain the knowledge</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-pos">&#9679;</span>
+          <span>Capability building takes time but compounds</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-pos">&#9679;</span>
+          <span>Knowledge stays inside the organization</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-pos">&#9679;</span>
+          <span>Cost decreases over time as team matures</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-pos">&#9679;</span>
+          <span>Practitioners become more valuable &mdash; career development and retention</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-pos">&#9679;</span>
+          <span>Tools built by the team, understood by the team, evolved by the team</span>
+        </div>
+        <div class="comparison-item">
+          <span class="icon-pos">&#9679;</span>
+          <span>Strategic flexibility to adapt as business needs change</span>
+        </div>
+        <div class="comparison-bottom">Cost avoidance at scale. Every process that shifts from consultant-dependent to internally executed is margin recaptured.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     SECTION 8: TRACK RECORD
+     ========================================== -->
+<section id="track-record" class="section-alt">
+  <div class="container">
+    <div class="eyebrow" data-animate>Track Record</div>
+    <h2 data-animate data-delay="1">Proven at Scale</h2>
+    <p class="lead" data-animate data-delay="2">This methodology powered the AI transformation of a major consultancy's source-to-contract managed services practice.</p>
+
+    <div class="stats-grid" data-animate data-delay="3">
+      <div class="stat-card">
+        <div class="stat-number" data-count="300" data-suffix="+">0</div>
+        <div class="stat-label">Practitioners Trained</div>
+        <div class="stat-desc">Across sourcing, contracting, category &amp; supplier management</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" data-count="79" data-prefix="30–" data-suffix="%">0</div>
+        <div class="stat-label">Speed Improvement</div>
+        <div class="stat-desc">Task-level speed improvements, measured and sustained</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" data-count="2" data-prefix="Day ">0</div>
+        <div class="stat-label">Immediate Usage</div>
+        <div class="stat-desc">Not months-later adoption &mdash; practitioners use tools the next day</div>
+      </div>
+    </div>
+
+    <div class="proof-points" data-animate data-delay="4">
+      <div class="proof-item">
+        <div class="proof-header" role="button" tabindex="0" aria-expanded="false">
+          <span>Built the proprietary AI tooling that differentiates their offering</span>
+          <svg class="proof-chevron" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="proof-body">
+          <div class="proof-body-inner">The custom AI tools and agents weren't procured from a vendor. They were built as part of the engagement &mdash; by the practitioners who would use them, with expert guidance. This is the model in action: capability built inside the team, not delivered to it.</div>
+        </div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-header" role="button" tabindex="0" aria-expanded="false">
+          <span>Recognized by Everest Group for AI innovation in source-to-contract</span>
+          <svg class="proof-chevron" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="proof-body">
+          <div class="proof-body-inner">Industry recognition from a major analyst firm validates that this approach produces results visible at the market level, not just internally. The AI innovation being recognized was built using this exact methodology.</div>
+        </div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-header" role="button" tabindex="0" aria-expanded="false">
+          <span>Developed by a self-taught practitioner with zero engineering background</span>
+          <svg class="proof-chevron" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="proof-body">
+          <div class="proof-body-inner">This proves the model: AI fluency doesn't require technical pedigree. It requires methodology, real-world application, and sustained practice. If the methodology's creator could build this capability without an engineering degree, your practitioners can too.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     SECTION 9: PLATFORM AGNOSTIC
+     ========================================== -->
+<section id="platform">
+  <div class="container">
+    <div class="eyebrow" data-animate>Platform Agnostic</div>
+    <h2 data-animate data-delay="1">The Skill Is How to Think With AI</h2>
+    <p class="lead" data-animate data-delay="2">This model works regardless of which AI platform the organization uses. The agents, workflows, and applications differ by platform. The methodology doesn't.</p>
+    <div class="platform-box" data-animate data-delay="3">
+      <p style="font-size: 0.95rem; color: var(--slate); margin-bottom: 16px;">Works with any AI platform &mdash; current or future:</p>
+      <div class="platform-logos">
+        <span class="platform-tag">ChatGPT</span>
+        <span class="platform-tag">Claude</span>
+        <span class="platform-tag">Gemini</span>
+        <span class="platform-tag">Copilot</span>
+        <span class="platform-tag">Whatever's Next</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     SECTION 10: CALL TO ACTION
+     ========================================== -->
+<section id="cta" class="cta-section">
+  <div class="container">
+    <div class="eyebrow" data-animate style="color: var(--teal-light);">Next Step</div>
+    <h2 data-animate data-delay="1">Let's Talk About Your Context</h2>
+    <p class="lead" data-animate data-delay="2">Before any engagement, there's a mutual fit assessment. This works when the conditions are right.</p>
+
+    <div class="cta-card" data-animate data-delay="3">
+      <h3>What We'll Discuss</h3>
+      <p>An honest conversation about whether this is the right approach for your organization:</p>
+      <ul class="cta-list">
+        <li>What are the priority use cases?</li>
+        <li>Who are the practitioners? (Curiosity, willingness to challenge workflows, authority to implement)</li>
+        <li>What does success look like for your organization?</li>
+        <li>What level of commitment can be sustained?</li>
+      </ul>
+      <a href="mailto:haris_rahi@hotmail.com?subject=Own%20Your%20AI%20%E2%80%94%20Let's%20Talk&body=Hi%20Haris%2C%0A%0AI'd%20like%20to%20discuss%20the%20Own%20Your%20AI%20engagement%20for%20our%20organization.%0A%0A" class="cta-button">
+        Start a Conversation
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="cta-footer" data-animate data-delay="4">
+      Own Your AI &mdash; A Procurement Performance Model
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================
+     JAVASCRIPT
+     ========================================== -->
+<script>
+(function() {
+  'use strict';
+
+  // ===== SCROLL PROGRESS BAR =====
+  const progressBar = document.getElementById('progressBar');
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+  }
+
+  // ===== INTERSECTION OBSERVER — SCROLL ANIMATIONS =====
+  const animObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        animObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('[data-animate]').forEach(function(el) {
+    animObserver.observe(el);
+  });
+
+  // ===== DOT NAVIGATION — ACTIVE STATE =====
+  const sections = document.querySelectorAll('section[id]');
+  const dotLinks = document.querySelectorAll('.dot-nav a');
+
+  const navObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        dotLinks.forEach(function(link) {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(function(section) { navObserver.observe(section); });
+
+  // ===== PHASE ACCORDIONS =====
+  document.querySelectorAll('.phase-header').forEach(function(header) {
+    header.addEventListener('click', function() {
+      var card = this.closest('.phase-card');
+      var body = card.querySelector('.phase-body');
+      var inner = card.querySelector('.phase-body-inner');
+      var isExpanded = card.classList.contains('expanded');
+
+      // Close all others
+      document.querySelectorAll('.phase-card.expanded').forEach(function(c) {
+        if (c !== card) {
+          c.classList.remove('expanded');
+          c.querySelector('.phase-header').setAttribute('aria-expanded', 'false');
+          c.querySelector('.phase-body').style.maxHeight = '0';
+        }
+      });
+
+      if (isExpanded) {
+        card.classList.remove('expanded');
+        this.setAttribute('aria-expanded', 'false');
+        body.style.maxHeight = '0';
+      } else {
+        card.classList.add('expanded');
+        this.setAttribute('aria-expanded', 'true');
+        body.style.maxHeight = inner.scrollHeight + 'px';
+      }
+    });
+
+    header.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+    });
+  });
+
+  // ===== PROOF ACCORDIONS =====
+  document.querySelectorAll('.proof-header').forEach(function(header) {
+    header.addEventListener('click', function() {
+      var item = this.closest('.proof-item');
+      var body = item.querySelector('.proof-body');
+      var inner = item.querySelector('.proof-body-inner');
+      var isExpanded = item.classList.contains('expanded');
+
+      if (isExpanded) {
+        item.classList.remove('expanded');
+        this.setAttribute('aria-expanded', 'false');
+        body.style.maxHeight = '0';
+      } else {
+        item.classList.add('expanded');
+        this.setAttribute('aria-expanded', 'true');
+        body.style.maxHeight = inner.scrollHeight + 'px';
+      }
+    });
+
+    header.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+    });
+  });
+
+  // ===== DIFFERENTIATOR TILES =====
+  document.querySelectorAll('.diff-tile').forEach(function(tile) {
+    tile.addEventListener('click', function() {
+      var wasActive = this.classList.contains('active');
+      // Close all
+      document.querySelectorAll('.diff-tile.active').forEach(function(t) { t.classList.remove('active'); });
+      if (!wasActive) { this.classList.add('active'); }
+    });
+  });
+
+  // ===== STREAM CARDS =====
+  document.querySelectorAll('.stream-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      var wasActive = this.classList.contains('active');
+      document.querySelectorAll('.stream-card.active').forEach(function(c) { c.classList.remove('active'); });
+      if (!wasActive) { this.classList.add('active'); }
+    });
+  });
+
+  // ===== COMPARISON TOGGLE =====
+  var toggleBtns = document.querySelectorAll('.toggle-btn');
+  var rentCol = document.getElementById('rentCol');
+  var ownCol = document.getElementById('ownCol');
+
+  toggleBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      toggleBtns.forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
+      this.classList.add('active');
+      this.setAttribute('aria-pressed', 'true');
+      var view = this.getAttribute('data-toggle');
+      if (view === 'rent') {
+        rentCol.classList.remove('dimmed');
+        ownCol.classList.add('dimmed');
+      } else {
+        ownCol.classList.remove('dimmed');
+        rentCol.classList.add('dimmed');
+      }
+    });
+  });
+
+  // ===== ANIMATED COUNTERS =====
+  var counted = false;
+  var statCards = document.querySelectorAll('.stat-number[data-count]');
+
+  function animateCounters() {
+    if (counted) return;
+    counted = true;
+    statCards.forEach(function(el) {
+      var target = parseInt(el.getAttribute('data-count'), 10);
+      var prefix = el.getAttribute('data-prefix') || '';
+      var suffix = el.getAttribute('data-suffix') || '';
+      var current = 0;
+      var step = Math.max(1, Math.floor(target / 40));
+      var interval = setInterval(function() {
+        current += step;
+        if (current >= target) {
+          current = target;
+          clearInterval(interval);
+        }
+        el.textContent = prefix + current + suffix;
+      }, 30);
+    });
+  }
+
+  var statsObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        animateCounters();
+        statsObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  var statsGrid = document.querySelector('.stats-grid');
+  if (statsGrid) { statsObserver.observe(statsGrid); }
+
+  // ===== SCROLL LISTENER =====
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+
+  // ===== INITIAL VISIBILITY CHECK (for elements already in view) =====
+  window.addEventListener('load', function() {
+    document.querySelectorAll('[data-animate]').forEach(function(el) {
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        el.classList.add('visible');
+        animObserver.unobserve(el);
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
