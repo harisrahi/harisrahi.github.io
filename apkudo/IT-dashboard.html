@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apkudo Customer Intelligence Dashboard Prototype</title>
+  <style>
+    :root {
+      --bg: #f4f7f3;
+      --ink: #0f1b1d;
+      --muted: #536467;
+      --card: #ffffff;
+      --line: #dce7e0;
+      --accent: #0f766e;
+      --accent-2: #2f855a;
+      --warn: #c05621;
+      --danger: #b83232;
+      --good: #276749;
+      --shadow: 0 10px 24px rgba(12, 41, 36, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 8%, #d9f3e5 0%, transparent 30%),
+        radial-gradient(circle at 86% 14%, #d7ece8 0%, transparent 32%),
+        linear-gradient(180deg, #f8fbf8 0%, #eef4ef 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1300px, 96vw);
+      margin: 24px auto 40px;
+    }
+
+    .hero {
+      background: linear-gradient(130deg, #073b3a, #0f766e 58%, #3c8b68);
+      color: #f8fffd;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -90px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.25rem, 1.6vw + 1rem, 2rem);
+      letter-spacing: 0.02em;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      max-width: 840px;
+      font-size: 0.95rem;
+      color: #d8f6ef;
+    }
+
+    .toolbar {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      color: #d3efe8;
+      font-weight: 600;
+    }
+
+    select {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 10px;
+      padding: 9px 10px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #e9fffa;
+      font-weight: 600;
+      backdrop-filter: blur(3px);
+    }
+
+    select option {
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .section-title {
+      margin: 22px 2px 10px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #2f4d49;
+      font-weight: 700;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .kpi-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .kpi-value {
+      margin: 6px 0 4px;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    .kpi-sub {
+      margin: 0;
+      font-size: 0.83rem;
+      color: #315a55;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      letter-spacing: 0.01em;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin: 0 0 8px;
+    }
+
+    .insight {
+      margin-top: 8px;
+      background: #edf8f5;
+      border: 1px solid #cae7de;
+      color: #24544c;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 60px;
+      align-items: center;
+      gap: 8px;
+      margin: 7px 0;
+      font-size: 0.82rem;
+    }
+
+    .track {
+      height: 10px;
+      border-radius: 99px;
+      background: #e7f0ec;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #0f766e, #3f9d75);
+    }
+
+    .chip-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+      background: #fbfefd;
+    }
+
+    .chip p { margin: 0; font-size: 0.78rem; color: var(--muted); }
+    .chip strong { font-size: 1.02rem; }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .table th,
+    .table td {
+      text-align: left;
+      padding: 7px 6px;
+      border-bottom: 1px solid #e2ece7;
+    }
+
+    .table th {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #4a6864;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 3px 7px;
+      border-radius: 99px;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    .b-good { background: #d7f2e2; color: #1c5c3e; }
+    .b-risk { background: #ffe2d7; color: #863714; }
+    .b-high { background: #ffd9d9; color: #842020; }
+
+    .line-chart {
+      width: 100%;
+      height: 180px;
+      display: block;
+      background: linear-gradient(180deg, #f7fcfa, #eef7f3);
+      border-radius: 10px;
+      border: 1px solid #deece6;
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: #48635f;
+      flex-wrap: wrap;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+      transform: translateY(1px);
+    }
+
+    .action {
+      border: 1px solid #d3e8df;
+      border-left: 4px solid #0f766e;
+      padding: 9px;
+      border-radius: 9px;
+      background: #f8fdfb;
+      margin-bottom: 8px;
+    }
+
+    .action h4 {
+      margin: 0 0 5px;
+      font-size: 0.89rem;
+    }
+
+    .action p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #4e6462;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      font-size: 0.76rem;
+      color: #516764;
+    }
+
+    @media (max-width: 1100px) {
+      .toolbar { grid-template-columns: repeat(3, minmax(120px, 1fr)); }
+      .kpi-grid { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
+      .span-8, .span-7, .span-6, .span-5, .span-4 { grid-column: span 12; }
+    }
+
+    @media (max-width: 720px) {
+      .toolbar { grid-template-columns: repeat(2, minmax(110px, 1fr)); }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+      .hero { padding: 16px; }
+      .bar-row { grid-template-columns: 120px 1fr 52px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="hero">
+      <h1>Customer Lifecycle Intelligence | Enterprise IT Fleet Manager</h1>
+      <p>
+        Prototype dashboard showing how Apkudo can convert a customer’s Device Passport data into fleet cost control,
+        recovery uplift, and operational action.
+      </p>
+      <div class="toolbar">
+        <div>
+          <label for="timeFilter">Time Window</label>
+          <select id="timeFilter">
+            <option value="90">Last 90 Days</option>
+            <option value="180">Last 180 Days</option>
+            <option value="365" selected>Last 12 Months</option>
+          </select>
+        </div>
+        <div>
+          <label for="regionFilter">Region</label>
+          <select id="regionFilter"></select>
+        </div>
+        <div>
+          <label for="buFilter">Business Unit</label>
+          <select id="buFilter"></select>
+        </div>
+        <div>
+          <label for="modelFilter">Model Family</label>
+          <select id="modelFilter"></select>
+        </div>
+        <div>
+          <label for="vendorFilter">Primary Vendor</label>
+          <select id="vendorFilter"></select>
+        </div>
+      </div>
+    </header>
+
+    <p class="section-title">Executive Summary</p>
+    <section class="kpi-grid" id="kpiGrid"></section>
+
+    <p class="section-title">Fleet Health And Cost Intelligence</p>
+    <section class="layout">
+      <article class="card span-5">
+        <h3>Fleet Health Bands</h3>
+        <p class="muted">Battery and condition distribution across selected devices.</p>
+        <div id="healthBars"></div>
+        <p class="insight" id="healthInsight"></p>
+      </article>
+
+      <article class="card span-7">
+        <h3>Repair And Residual Trend</h3>
+        <p class="muted">Monthly total repair spend vs residual recovery value.</p>
+        <svg class="line-chart" id="trendChart" viewBox="0 0 800 180" preserveAspectRatio="none"></svg>
+        <div class="legend">
+          <span><span class="dot" style="background:#0f766e"></span>Repair Cost</span>
+          <span><span class="dot" style="background:#2f855a"></span>Residual Value Realized</span>
+        </div>
+        <p class="insight" id="trendInsight"></p>
+      </article>
+
+      <article class="card span-6">
+        <h3>Top Repair Cost Drivers</h3>
+        <p class="muted">Component clusters driving avoidable service expense.</p>
+        <table class="table" id="componentTable"></table>
+        <p class="insight" id="componentInsight"></p>
+      </article>
+
+      <article class="card span-6">
+        <h3>Disposition Mix</h3>
+        <p class="muted">Outcome distribution by keep, redeploy, resell, and recycle paths.</p>
+        <div id="dispositionBars"></div>
+        <p class="insight" id="dispositionInsight"></p>
+      </article>
+    </section>
+
+    <p class="section-title">Vendor Performance And Pipeline Efficiency</p>
+    <section class="layout">
+      <article class="card span-8">
+        <h3>Vendor Performance Matrix</h3>
+        <p class="muted">Cost, turnaround, dispute, and grading consistency benchmark.</p>
+        <table class="table" id="vendorTable"></table>
+        <p class="insight" id="vendorInsight"></p>
+      </article>
+
+      <article class="card span-4">
+        <h3>Pipeline Bottleneck</h3>
+        <p class="muted">Average dwell time by processing stage.</p>
+        <div id="stageBars"></div>
+        <p class="insight" id="stageInsight"></p>
+      </article>
+
+      <article class="card span-12">
+        <h3>Priority Action Queue (Next 90 Days)</h3>
+        <p class="muted">Data-backed recommendations with estimated impact for fleet leadership.</p>
+        <div id="actions"></div>
+      </article>
+    </section>
+
+    <p class="footer-note">
+      Prototype note: values shown are simulated for demonstration and represent what Apkudo can produce from customer Device Passport data.
+    </p>
+  </div>
+
+  <script>
+    const models = ["iPhone 13", "iPhone 14", "Galaxy S22", "Galaxy S23", "Pixel 7", "Pixel 8"];
+    const regions = ["North America", "EMEA", "APAC"];
+    const businessUnits = ["Corporate", "Field Ops", "Retail", "Contact Center"];
+    const vendors = ["Apex Repair", "Nova Tech", "Orbit Services", "Vertex Mobile"];
+    const components = ["Display", "Battery", "Mainboard", "Camera", "Charging Port", "Housing"];
+    const dispositions = ["Keep", "Redeploy", "Resell", "Recycle"];
+
+    const modelBaseValue = {
+      "iPhone 13": 300, "iPhone 14": 380, "Galaxy S22": 245,
+      "Galaxy S23": 325, "Pixel 7": 215, "Pixel 8": 290
+    };
+
+    const now = new Date("2026-02-13T12:00:00");
+
+    function seeded(n) {
+      const x = Math.sin(n * 9999) * 10000;
+      return x - Math.floor(x);
+    }
+
+    function pick(arr, seed) {
+      return arr[Math.floor(seeded(seed) * arr.length)];
+    }
+
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function generateData(size = 1200) {
+      const list = [];
+      for (let i = 1; i <= size; i++) {
+        const model = pick(models, i * 1.19);
+        const region = pick(regions, i * 1.31);
+        const businessUnit = pick(businessUnits, i * 1.57);
+        const vendor = pick(vendors, i * 1.91);
+        const ageMonths = Math.floor(seeded(i * 2.31) * 42);
+        const battery = clamp(100 - ageMonths * (1.1 + seeded(i * 2.71)) + seeded(i * 3.09) * 8, 52, 100);
+        const condition = battery > 88 ? "A" : battery > 78 ? "B" : battery > 68 ? "C" : "D";
+        const failureComponent = seeded(i * 4.1) > 0.34 ? null : pick(components, i * 4.4);
+        const repairCost = failureComponent ? (35 + seeded(i * 4.9) * 140 + ageMonths * 1.2) : 0;
+        const baseValue = modelBaseValue[model];
+        const residualPotential = clamp(baseValue - ageMonths * 3.5 + (battery - 70) * 2.2, 35, 520);
+        const residualRealized = clamp(residualPotential * (0.78 + seeded(i * 5.2) * 0.26), 20, 560);
+        const warrantyEligible = ageMonths <= 18 && seeded(i * 5.8) > 0.45;
+        const warrantyRecovered = warrantyEligible ? repairCost * (0.15 + seeded(i * 6.2) * 0.7) : 0;
+        const dispute = seeded(i * 6.4) > 0.9;
+        const gradeVariance = seeded(i * 6.6) * 18;
+
+        const intake = 0.6 + seeded(i * 7.1) * 3.3;
+        const triage = 0.5 + seeded(i * 7.4) * 2.6;
+        const repair = failureComponent ? 1.1 + seeded(i * 7.8) * 5.2 : 0.5 + seeded(i * 7.8) * 1.2;
+        const qa = 0.4 + seeded(i * 8.1) * 1.4;
+        const resale = 0.8 + seeded(i * 8.7) * 4.8;
+
+        const daysAgo = Math.floor(seeded(i * 2.03) * 365);
+        const processedDate = new Date(now);
+        processedDate.setDate(processedDate.getDate() - daysAgo);
+
+        let disposition = dispositions[Math.floor(seeded(i * 9.1) * 4)];
+        if (battery < 68 || condition === "D") disposition = "Recycle";
+        if (battery > 90 && ageMonths < 12) disposition = "Keep";
+        if (battery > 84 && ageMonths < 20 && seeded(i * 9.3) > 0.5) disposition = "Redeploy";
+
+        list.push({
+          id: `DVC-${100000 + i}`,
+          model,
+          region,
+          businessUnit,
+          vendor,
+          ageMonths,
+          battery,
+          condition,
+          failureComponent,
+          repairCost,
+          residualPotential,
+          residualRealized,
+          warrantyEligible,
+          warrantyRecovered,
+          dispute,
+          gradeVariance,
+          stageDays: { intake, triage, repair, qa, resale },
+          disposition,
+          processedDate
+        });
+      }
+      return list;
+    }
+
+    const dataset = generateData();
+
+    const els = {
+      timeFilter: document.getElementById("timeFilter"),
+      regionFilter: document.getElementById("regionFilter"),
+      buFilter: document.getElementById("buFilter"),
+      modelFilter: document.getElementById("modelFilter"),
+      vendorFilter: document.getElementById("vendorFilter"),
+      kpiGrid: document.getElementById("kpiGrid"),
+      healthBars: document.getElementById("healthBars"),
+      healthInsight: document.getElementById("healthInsight"),
+      trendChart: document.getElementById("trendChart"),
+      trendInsight: document.getElementById("trendInsight"),
+      componentTable: document.getElementById("componentTable"),
+      componentInsight: document.getElementById("componentInsight"),
+      dispositionBars: document.getElementById("dispositionBars"),
+      dispositionInsight: document.getElementById("dispositionInsight"),
+      vendorTable: document.getElementById("vendorTable"),
+      vendorInsight: document.getElementById("vendorInsight"),
+      stageBars: document.getElementById("stageBars"),
+      stageInsight: document.getElementById("stageInsight"),
+      actions: document.getElementById("actions")
+    };
+
+    function addOptions(select, values) {
+      select.innerHTML = `<option value="all">All</option>` + values.map(v => `<option value="${v}">${v}</option>`).join("");
+    }
+
+    addOptions(els.regionFilter, regions);
+    addOptions(els.buFilter, businessUnits);
+    addOptions(els.modelFilter, models);
+    addOptions(els.vendorFilter, vendors);
+
+    function money(v) {
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v || 0);
+    }
+
+    function pct(v) {
+      return `${(v * 100).toFixed(1)}%`;
+    }
+
+    function num(v) {
+      return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(v || 0);
+    }
+
+    function filteredData() {
+      const days = Number(els.timeFilter.value);
+      const region = els.regionFilter.value;
+      const bu = els.buFilter.value;
+      const model = els.modelFilter.value;
+      const vendor = els.vendorFilter.value;
+      const cutoff = new Date(now);
+      cutoff.setDate(cutoff.getDate() - days);
+
+      return dataset.filter(d => {
+        if (d.processedDate < cutoff) return false;
+        if (region !== "all" && d.region !== region) return false;
+        if (bu !== "all" && d.businessUnit !== bu) return false;
+        if (model !== "all" && d.model !== model) return false;
+        if (vendor !== "all" && d.vendor !== vendor) return false;
+        return true;
+      });
+    }
+
+    function monthlySeries(rows) {
+      const map = new Map();
+      for (const r of rows) {
+        const key = `${r.processedDate.getFullYear()}-${String(r.processedDate.getMonth() + 1).padStart(2, "0")}`;
+        if (!map.has(key)) map.set(key, { repair: 0, residual: 0, count: 0 });
+        const cur = map.get(key);
+        cur.repair += r.repairCost;
+        cur.residual += r.residualRealized;
+        cur.count += 1;
+      }
+      return [...map.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => ({ month: k, ...v }));
+    }
+
+    function drawLineChart(svg, seriesA, seriesB) {
+      const W = 800, H = 180, pad = 26;
+      const n = Math.max(seriesA.length, 2);
+      const maxY = Math.max(...seriesA, ...seriesB, 1);
+
+      function points(arr) {
+        return arr.map((val, i) => {
+          const x = pad + (i * (W - pad * 2)) / (n - 1);
+          const y = H - pad - (val / maxY) * (H - pad * 2);
+          return [x, y];
+        });
+      }
+
+      const pA = points(seriesA);
+      const pB = points(seriesB);
+      const dA = pA.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+      const dB = pB.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+
+      const grid = [0.25, 0.5, 0.75].map(f => {
+        const y = (H - pad) - (H - pad * 2) * f;
+        return `<line x1="${pad}" y1="${y}" x2="${W - pad}" y2="${y}" stroke="#d8e8e1" stroke-width="1" />`;
+      }).join("");
+
+      svg.innerHTML = `
+        ${grid}
+        <path d="${dA}" fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" />
+        <path d="${dB}" fill="none" stroke="#2f855a" stroke-width="3" stroke-linecap="round" />
+      `;
+    }
+
+    function update() {
+      const rows = filteredData();
+      const totalDevices = rows.length || 1;
+
+      const totalRepair = rows.reduce((s, r) => s + r.repairCost, 0);
+      const totalResidualPotential = rows.reduce((s, r) => s + r.residualPotential, 0);
+      const totalResidualRealized = rows.reduce((s, r) => s + r.residualRealized, 0);
+      const totalWarrantyRecovered = rows.reduce((s, r) => s + r.warrantyRecovered, 0);
+      const totalStageDays = rows.reduce((s, r) => s + Object.values(r.stageDays).reduce((a, b) => a + b, 0), 0);
+      const atRisk = rows.filter(r => r.battery < 72 || r.dispute || r.gradeVariance > 12).length;
+
+      const costPerDevice = totalRepair / totalDevices;
+      const recoveryRate = totalResidualRealized / Math.max(totalResidualPotential, 1);
+      const dwellCost = totalStageDays * 9.5;
+      const warrantyCaptureRate = totalWarrantyRecovered / Math.max(totalRepair, 1);
+
+      els.kpiGrid.innerHTML = `
+        <div class="card"><p class="kpi-label">Total Cost / Active Device</p><p class="kpi-value">${money(costPerDevice)}</p><p class="kpi-sub">Repair + processing impact per device</p></div>
+        <div class="card"><p class="kpi-label">Residual Recovery Rate</p><p class="kpi-value">${pct(recoveryRate)}</p><p class="kpi-sub">Realized vs potential resale value</p></div>
+        <div class="card"><p class="kpi-label">Inventory Dwell Cost</p><p class="kpi-value">${money(dwellCost)}</p><p class="kpi-sub">Capital drag across pipeline stages</p></div>
+        <div class="card"><p class="kpi-label">Warranty Recovery Capture</p><p class="kpi-value">${pct(warrantyCaptureRate)}</p><p class="kpi-sub">Recovered warranty value vs repair spend</p></div>
+        <div class="card"><p class="kpi-label">Devices With Actionable Risk</p><p class="kpi-value">${num(atRisk)}</p><p class="kpi-sub">${pct(atRisk / totalDevices)} of selected population</p></div>
+      `;
+
+      const health = {
+        "Battery 90-100": rows.filter(r => r.battery >= 90).length,
+        "Battery 80-89": rows.filter(r => r.battery >= 80 && r.battery < 90).length,
+        "Battery 70-79": rows.filter(r => r.battery >= 70 && r.battery < 80).length,
+        "Battery <70": rows.filter(r => r.battery < 70).length
+      };
+
+      const cond = {
+        "Grade A": rows.filter(r => r.condition === "A").length,
+        "Grade B": rows.filter(r => r.condition === "B").length,
+        "Grade C": rows.filter(r => r.condition === "C").length,
+        "Grade D": rows.filter(r => r.condition === "D").length
+      };
+
+      const maxHealth = Math.max(...Object.values(health), ...Object.values(cond), 1);
+      const bars = [...Object.entries(health), ...Object.entries(cond)]
+        .map(([k, v]) => `<div class="bar-row"><span>${k}</span><div class="track"><div class="fill" style="width:${(v / maxHealth) * 100}%"></div></div><strong>${num(v)}</strong></div>`)
+        .join("");
+      els.healthBars.innerHTML = bars;
+
+      const lowBatteryPct = (health["Battery <70"] || 0) / totalDevices;
+      els.healthInsight.textContent = lowBatteryPct > 0.2
+        ? `High-risk cohort detected: ${pct(lowBatteryPct)} of devices are below 70% battery health. Prioritize redeploy holds and targeted battery programs.`
+        : `Fleet condition is stable. Only ${pct(lowBatteryPct)} of devices are below 70% battery health.`;
+
+      const trend = monthlySeries(rows);
+      const repairSeries = trend.map(t => t.repair);
+      const residualSeries = trend.map(t => t.residual);
+      drawLineChart(els.trendChart, repairSeries, residualSeries);
+
+      const recent = trend.slice(-3);
+      const recentRepair = recent.reduce((s, r) => s + r.repair, 0);
+      const recentResidual = recent.reduce((s, r) => s + r.residual, 0);
+      els.trendInsight.textContent = recentResidual >= recentRepair
+        ? `Recovery momentum is positive: last 3 months residual value (${money(recentResidual)}) is outpacing repair spend (${money(recentRepair)}).`
+        : `Repair spend (${money(recentRepair)}) exceeded residual recovery (${money(recentResidual)}) in the last 3 months. Review disposition and timing rules.`;
+
+      const compMap = new Map();
+      for (const r of rows.filter(r => r.failureComponent)) {
+        if (!compMap.has(r.failureComponent)) compMap.set(r.failureComponent, { count: 0, cost: 0 });
+        const c = compMap.get(r.failureComponent);
+        c.count += 1;
+        c.cost += r.repairCost;
+      }
+      const topComp = [...compMap.entries()].sort((a, b) => b[1].cost - a[1].cost).slice(0, 5);
+      els.componentTable.innerHTML = `
+        <thead><tr><th>Component</th><th>Repair Count</th><th>Total Cost</th><th>Avg Cost</th></tr></thead>
+        <tbody>
+          ${topComp.map(([name, v]) => `<tr><td>${name}</td><td>${num(v.count)}</td><td>${money(v.cost)}</td><td>${money(v.cost / Math.max(v.count,1))}</td></tr>`).join("")}
+        </tbody>
+      `;
+      const topCompName = topComp[0] ? topComp[0][0] : "N/A";
+      const topCompShare = topComp[0] ? topComp[0][1].cost / Math.max(totalRepair, 1) : 0;
+      els.componentInsight.textContent = `${topCompName} drives ${pct(topCompShare)} of observed repair spend. This is the best target for procurement and preventative maintenance policy.`;
+
+      const dispMap = new Map();
+      for (const d of dispositions) dispMap.set(d, 0);
+      for (const r of rows) dispMap.set(r.disposition, (dispMap.get(r.disposition) || 0) + 1);
+      const maxDisp = Math.max(...dispMap.values(), 1);
+      els.dispositionBars.innerHTML = [...dispMap.entries()]
+        .map(([k, v]) => `<div class="bar-row"><span>${k}</span><div class="track"><div class="fill" style="width:${(v/maxDisp)*100}%; background:linear-gradient(90deg,#2b6cb0,#2f855a)"></div></div><strong>${pct(v/totalDevices)}</strong></div>`)
+        .join("");
+
+      const resellPct = (dispMap.get("Resell") || 0) / totalDevices;
+      const redeployPct = (dispMap.get("Redeploy") || 0) / totalDevices;
+      els.dispositionInsight.textContent = `Resell (${pct(resellPct)}) and redeploy (${pct(redeployPct)}) pathways represent the main levers to increase recovery without new capital expense.`;
+
+      const vMap = new Map();
+      for (const v of vendors) vMap.set(v, { count: 0, cost: 0, days: 0, disputes: 0, gradeVar: 0 });
+      for (const r of rows) {
+        const v = vMap.get(r.vendor);
+        v.count += 1;
+        v.cost += r.repairCost;
+        v.days += r.stageDays.repair + r.stageDays.qa;
+        v.disputes += r.dispute ? 1 : 0;
+        v.gradeVar += r.gradeVariance;
+      }
+
+      const vendorRows = [...vMap.entries()].map(([name, v]) => {
+        const avgCost = v.cost / Math.max(v.count, 1);
+        const avgDays = v.days / Math.max(v.count, 1);
+        const disputeRate = v.disputes / Math.max(v.count, 1);
+        const avgVariance = v.gradeVar / Math.max(v.count, 1);
+        const score = 100 - (avgCost * 0.12 + avgDays * 4 + disputeRate * 120 + avgVariance * 1.2);
+        return { name, avgCost, avgDays, disputeRate, avgVariance, score };
+      }).sort((a, b) => b.score - a.score);
+
+      els.vendorTable.innerHTML = `
+        <thead><tr><th>Vendor</th><th>Score</th><th>Cost/Repair</th><th>Turnaround</th><th>Dispute</th><th>Grade Var.</th></tr></thead>
+        <tbody>
+          ${vendorRows.map((r, i) => {
+            const badge = i === 0 ? "b-good" : i === vendorRows.length - 1 ? "b-high" : "b-risk";
+            return `<tr>
+              <td>${r.name}</td>
+              <td><span class="badge ${badge}">${r.score.toFixed(1)}</span></td>
+              <td>${money(r.avgCost)}</td>
+              <td>${r.avgDays.toFixed(1)} days</td>
+              <td>${pct(r.disputeRate)}</td>
+              <td>${r.avgVariance.toFixed(1)} pts</td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      `;
+
+      const bestVendor = vendorRows[0]?.name || "N/A";
+      const lowVendor = vendorRows[vendorRows.length - 1]?.name || "N/A";
+      els.vendorInsight.textContent = `${bestVendor} is the current benchmark. ${lowVendor} trails on combined cost, disputes, and grading variance; use this for SLA renegotiation or volume reallocation.`;
+
+      const stageKeys = ["intake", "triage", "repair", "qa", "resale"];
+      const stageTotals = Object.fromEntries(stageKeys.map(k => [k, 0]));
+      for (const r of rows) {
+        for (const k of stageKeys) stageTotals[k] += r.stageDays[k];
+      }
+      for (const k of stageKeys) stageTotals[k] /= totalDevices;
+
+      const maxStage = Math.max(...Object.values(stageTotals), 1);
+      els.stageBars.innerHTML = stageKeys.map(k => {
+        const val = stageTotals[k];
+        return `<div class="bar-row"><span>${k.toUpperCase()}</span><div class="track"><div class="fill" style="width:${(val/maxStage)*100}%; background:linear-gradient(90deg,#b45309,#d69e2e)"></div></div><strong>${val.toFixed(1)}d</strong></div>`;
+      }).join("");
+
+      const slowStage = stageKeys.reduce((a, b) => stageTotals[a] > stageTotals[b] ? a : b);
+      els.stageInsight.textContent = `${slowStage.toUpperCase()} is the main dwell bottleneck at ${stageTotals[slowStage].toFixed(1)} days average. Targeting this stage yields fastest working-capital release.`;
+
+      const savingsFromWarranty = totalRepair * 0.08;
+      const savingsFromVendorShift = totalRepair * 0.06;
+      const savingsFromDwell = dwellCost * 0.14;
+      const residualUplift = (totalResidualPotential - totalResidualRealized) * 0.22;
+
+      const actionCards = [
+        {
+          title: "Re-route high-variance repairs to top vendor tier",
+          impact: savingsFromVendorShift,
+          confidence: "High",
+          why: `${lowVendor} underperforms on score. Shift 20% of eligible volume to ${bestVendor} to reduce unit repair cost and dispute load.`
+        },
+        {
+          title: "Launch battery-first redeployment policy",
+          impact: residualUplift,
+          confidence: "Medium",
+          why: `Devices in 80-89% battery band are often sold early. Prioritize redeploy before resale to extend economic life.`
+        },
+        {
+          title: "Tighten warranty claim capture workflow",
+          impact: savingsFromWarranty,
+          confidence: "High",
+          why: `Current warranty recovery captures ${pct(warrantyCaptureRate)} of repair spend. Automating claim rules can lift capture materially.`
+        },
+        {
+          title: "Reduce ${slowStage.toUpperCase()} dwell time by 1 day",
+          impact: savingsFromDwell,
+          confidence: "Medium",
+          why: `Stage cycle reduction directly frees working capital tied in inventory and accelerates value realization.`
+        }
+      ].sort((a, b) => b.impact - a.impact);
+
+      els.actions.innerHTML = actionCards.map(a => `
+        <div class="action">
+          <h4>${a.title} <span class="badge ${a.confidence === "High" ? "b-good" : "b-risk"}">${a.confidence}</span></h4>
+          <p><strong>Estimated annualized impact:</strong> ${money(a.impact)}. ${a.why}</p>
+        </div>
+      `).join("");
+    }
+
+    [els.timeFilter, els.regionFilter, els.buFilter, els.modelFilter, els.vendorFilter].forEach(el => {
+      el.addEventListener("change", update);
+    });
+
+    update();
+  </script>
+</body>
+</html>
