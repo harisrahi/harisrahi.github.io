@@ -591,6 +591,162 @@ body {
   .divide-bar { width: 100%; height: 3px; }
 }
 
+/* ============ SCROLL GUIDE ============ */
+.scroll-guide {
+  position: fixed;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.scroll-guide.visible {
+  opacity: 1;
+}
+
+.sg-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+}
+
+.sg-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(120, 120, 120, 0.5);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(8px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.sg-item:hover .sg-label,
+.sg-item.active .sg-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sg-dot-wrap {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sg-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(120, 120, 120, 0.3);
+  transition: all 0.35s ease;
+}
+
+.sg-item:hover .sg-dot {
+  background: var(--rust);
+  transform: scale(1.3);
+}
+
+.sg-item.active .sg-dot {
+  background: var(--rust);
+  width: 8px;
+  height: 8px;
+  box-shadow: 0 0 0 3px rgba(196, 75, 40, 0.2);
+}
+
+/* Track line connecting dots */
+.sg-track {
+  position: absolute;
+  right: 5px;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 1px;
+  background: rgba(120, 120, 120, 0.12);
+  z-index: -1;
+}
+
+.sg-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: var(--rust);
+  opacity: 0.4;
+  transition: height 0.3s ease;
+}
+
+/* Adapt colors on dark sections */
+.scroll-guide.on-dark .sg-label { color: rgba(245, 240, 232, 0.4); }
+.scroll-guide.on-dark .sg-item.active .sg-label { color: rgba(245, 240, 232, 0.8); }
+.scroll-guide.on-dark .sg-item:hover .sg-label { color: rgba(245, 240, 232, 0.8); }
+.scroll-guide.on-dark .sg-dot { background: rgba(245, 240, 232, 0.25); }
+.scroll-guide.on-dark .sg-item:hover .sg-dot { background: var(--gold); }
+.scroll-guide.on-dark .sg-item.active .sg-dot {
+  background: var(--gold);
+  box-shadow: 0 0 0 3px rgba(212, 162, 78, 0.25);
+}
+.scroll-guide.on-dark .sg-track { background: rgba(245, 240, 232, 0.08); }
+.scroll-guide.on-dark .sg-progress-fill { background: var(--gold); }
+
+/* Up/Down nav buttons */
+.sg-nav-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(120, 120, 120, 0.2);
+  background: rgba(250, 248, 244, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--slate);
+  font-size: 0.7rem;
+  margin-right: -2px;
+}
+
+.sg-nav-btn:hover {
+  border-color: var(--rust);
+  color: var(--rust);
+  background: rgba(250, 248, 244, 0.95);
+}
+
+.scroll-guide.on-dark .sg-nav-btn {
+  background: rgba(26, 20, 16, 0.6);
+  border-color: rgba(245, 240, 232, 0.15);
+  color: rgba(245, 240, 232, 0.5);
+}
+
+.scroll-guide.on-dark .sg-nav-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.sg-spacer { height: 0.4rem; }
+
+@media (max-width: 768px) {
+  .scroll-guide { right: 0.6rem; }
+  .sg-label { display: none; }
+  .sg-nav-btn { width: 24px; height: 24px; }
+}
+
 /* ============ GRAIN OVERLAY ============ */
 body::after {
   content: '';
@@ -608,8 +764,51 @@ body::after {
 <!-- Reading Progress -->
 <div class="reading-progress" id="progress"></div>
 
+<!-- ============ SCROLL GUIDE ============ -->
+<nav class="scroll-guide" id="scrollGuide">
+  <div class="sg-nav-btn" id="sgUp" title="Previous section">▲</div>
+  <div class="sg-spacer"></div>
+  <div style="position:relative;">
+    <div class="sg-track"><div class="sg-progress-fill" id="sgFill"></div></div>
+    <a class="sg-item" data-target="sec-hero">
+      <span class="sg-label">The Crisis</span>
+      <div class="sg-dot-wrap"><div class="sg-dot"></div></div>
+    </a>
+    <a class="sg-item" data-target="sec-stats">
+      <span class="sg-label">The Numbers</span>
+      <div class="sg-dot-wrap"><div class="sg-dot"></div></div>
+    </a>
+    <a class="sg-item" data-target="sec-betrayal">
+      <span class="sg-label">Systemic Betrayal</span>
+      <div class="sg-dot-wrap"><div class="sg-dot"></div></div>
+    </a>
+    <a class="sg-item" data-target="sec-quote">
+      <span class="sg-label">The Human Cost</span>
+      <div class="sg-dot-wrap"><div class="sg-dot"></div></div>
+    </a>
+    <a class="sg-item" data-target="sec-luxury">
+      <span class="sg-label">Luxury Good</span>
+      <div class="sg-dot-wrap"><div class="sg-dot"></div></div>
+    </a>
+    <a class="sg-item" data-target="sec-multiplier">
+      <span class="sg-label">The Multiplier</span>
+      <div class="sg-dot-wrap"><div class="sg-dot"></div></div>
+    </a>
+    <a class="sg-item" data-target="sec-pipeline">
+      <span class="sg-label">Upstream Justice</span>
+      <div class="sg-dot-wrap"><div class="sg-dot"></div></div>
+    </a>
+    <a class="sg-item" data-target="sec-cta">
+      <span class="sg-label">Take Action</span>
+      <div class="sg-dot-wrap"><div class="sg-dot"></div></div>
+    </a>
+  </div>
+  <div class="sg-spacer"></div>
+  <div class="sg-nav-btn" id="sgDown" title="Next section">▼</div>
+</nav>
+
 <!-- ============ HERO ============ -->
-<section class="hero">
+<section class="hero" id="sec-hero">
   <div class="hero-stat-bg">69%</div>
   <div class="hero-label">A crisis hiding in plain sight</div>
   <h1>We Are <em>Failing</em> Our Children</h1>
@@ -621,7 +820,7 @@ body::after {
 </section>
 
 <!-- ============ STAT BAND ============ -->
-<section class="stat-band">
+<section class="stat-band" id="sec-stats">
   <div class="stat-item reveal">
     <div class="stat-number"><span class="count-up" data-target="69">0</span>%</div>
     <div class="stat-label">4th graders below proficiency</div>
@@ -641,7 +840,7 @@ body::after {
 </section>
 
 <!-- ============ SYSTEMIC BETRAYAL ============ -->
-<section class="section">
+<section class="section" id="sec-betrayal">
   <div class="section-label reveal">01 — The Systemic Betrayal</div>
   <h2 class="reveal">Teachers Are Being Sent to the Front Lines <em>Unarmed</em></h2>
   <div class="section-body reveal">
@@ -651,13 +850,13 @@ body::after {
 </section>
 
 <!-- ============ PULL QUOTE ============ -->
-<div class="pull-quote reveal">
+<div class="pull-quote reveal" id="sec-quote">
   <blockquote>We are punishing children for neurological differences they cannot control.</blockquote>
   <cite>1 in 5 people have invisible hurdles like dyslexia</cite>
 </div>
 
 <!-- ============ TWO-TIER REALITY ============ -->
-<section class="two-tier">
+<section class="two-tier" id="sec-luxury">
   <div class="two-tier-inner">
     <div class="section-label reveal">02 — The Two-Tier Reality</div>
     <h2 class="reveal">Literacy Has Quietly Become a <em>Luxury Good</em></h2>
@@ -675,7 +874,7 @@ body::after {
 </section>
 
 <!-- ============ TEACHER-FIRST MULTIPLIER ============ -->
-<section class="section">
+<section class="section" id="sec-multiplier">
   <div class="section-label reveal">03 — The Multiplier Effect</div>
   <h2 class="reveal">One Teacher. <em>Thousands</em> of Lives.</h2>
   <div class="section-body reveal">
@@ -701,7 +900,7 @@ body::after {
 </section>
 
 <!-- ============ PIPELINE ============ -->
-<section class="pipeline">
+<section class="pipeline" id="sec-pipeline">
   <div class="pipeline-inner">
     <div class="section-label reveal">04 — Upstream Justice</div>
     <h2 class="reveal">Dismantling the School-to-Prison Pipeline <em>at Its Root</em></h2>
@@ -732,12 +931,12 @@ body::after {
 </section>
 
 <!-- ============ CTA ============ -->
-<section class="cta">
+<section class="cta" id="sec-cta">
   <h2 class="reveal">Every Child Deserves<br>the Chance to <em>Read</em></h2>
   <p class="reveal">CLF is not just teaching reading. They are rewriting futures, breaking cycles, and building a more just world, one classroom at a time.</p>
   <div class="reveal">
-    <a href="https://thecfl.org" target="_blank" class="cta-btn">Support CLF</a>
-    <a href="https://thecfl.org" target="_blank" class="cta-btn">Learn More</a>
+    <a href="https://classmatesliteracy.org/donate" target="_blank" class="cta-btn">Support CLF</a>
+    <a href="https://classmatesliteracy.org" target="_blank" class="cta-btn">Learn More</a>
   </div>
 </section>
 
@@ -757,7 +956,6 @@ const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       entry.target.classList.add('visible');
-      // Trigger counters
       const counters = entry.target.querySelectorAll('.count-up');
       counters.forEach(counter => animateCounter(counter));
     }
@@ -773,17 +971,116 @@ function animateCounter(el) {
   const target = parseInt(el.dataset.target);
   const duration = 1800;
   const start = performance.now();
-
   function update(now) {
     const elapsed = now - start;
     const progress = Math.min(elapsed / duration, 1);
-    // Ease out cubic
     const eased = 1 - Math.pow(1 - progress, 3);
     el.textContent = Math.round(target * eased);
     if (progress < 1) requestAnimationFrame(update);
   }
   requestAnimationFrame(update);
 }
+
+// ============ SCROLL GUIDE ============
+const scrollGuide = document.getElementById('scrollGuide');
+const sgItems = document.querySelectorAll('.sg-item');
+const sgFill = document.getElementById('sgFill');
+const sgUp = document.getElementById('sgUp');
+const sgDown = document.getElementById('sgDown');
+
+// Section IDs and their dark/light status
+const sections = [
+  { id: 'sec-hero', dark: true },
+  { id: 'sec-stats', dark: true },
+  { id: 'sec-betrayal', dark: false },
+  { id: 'sec-quote', dark: false },
+  { id: 'sec-luxury', dark: true },
+  { id: 'sec-multiplier', dark: false },
+  { id: 'sec-pipeline', dark: false },
+  { id: 'sec-cta', dark: true },
+];
+
+let currentIndex = 0;
+
+// Click handlers for dots
+sgItems.forEach((item, i) => {
+  item.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.getElementById(item.dataset.target);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+});
+
+// Up/Down buttons
+sgUp.addEventListener('click', () => {
+  const prev = Math.max(0, currentIndex - 1);
+  const target = document.getElementById(sections[prev].id);
+  if (target) target.scrollIntoView({ behavior: 'smooth' });
+});
+
+sgDown.addEventListener('click', () => {
+  const next = Math.min(sections.length - 1, currentIndex + 1);
+  const target = document.getElementById(sections[next].id);
+  if (target) target.scrollIntoView({ behavior: 'smooth' });
+});
+
+// Track active section on scroll
+function updateScrollGuide() {
+  const scrollY = window.scrollY;
+  const vh = window.innerHeight;
+
+  // Show/hide guide (hide at very top)
+  if (scrollY > vh * 0.3) {
+    scrollGuide.classList.add('visible');
+  } else {
+    scrollGuide.classList.add('visible'); // Always show for full navigation
+  }
+
+  // Find active section
+  let activeIdx = 0;
+  for (let i = sections.length - 1; i >= 0; i--) {
+    const el = document.getElementById(sections[i].id);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      if (rect.top <= vh * 0.45) {
+        activeIdx = i;
+        break;
+      }
+    }
+  }
+
+  currentIndex = activeIdx;
+
+  // Update active dots
+  sgItems.forEach((item, i) => {
+    item.classList.toggle('active', i === activeIdx);
+  });
+
+  // Update progress fill
+  const fillPct = (activeIdx / (sections.length - 1)) * 100;
+  sgFill.style.height = fillPct + '%';
+
+  // Update dark/light mode
+  const isDark = sections[activeIdx].dark;
+  scrollGuide.classList.toggle('on-dark', isDark);
+}
+
+window.addEventListener('scroll', updateScrollGuide, { passive: true });
+window.addEventListener('resize', updateScrollGuide);
+updateScrollGuide();
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+    e.preventDefault();
+    sgDown.click();
+  } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+    e.preventDefault();
+    sgUp.click();
+  }
+});
 </script>
 
 </body>
