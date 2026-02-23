@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Literacy Crisis — Children's Literacy Foundation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Sans+3:wght@300;400;600;700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1410;
+  --cream: #f5f0e8;
+  --warm-white: #faf8f4;
+  --rust: #c44b28;
+  --deep-rust: #9e3518;
+  --gold: #d4a24e;
+  --muted-sage: #6b7c6b;
+  --slate: #4a4a4a;
+  --light-slate: #7a7a7a;
+  --faint-line: rgba(26, 20, 16, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Source Sans 3', Georgia, serif;
+  background: var(--warm-white);
+  color: var(--ink);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============ HERO ============ */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  position: relative;
+  background: var(--ink);
+  color: var(--cream);
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(196, 75, 40, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 30%, rgba(212, 162, 78, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-stat-bg {
+  position: absolute;
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(20rem, 35vw, 45rem);
+  color: rgba(255,255,255,0.025);
+  line-height: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeUp 1s 0.3s ease forwards;
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(2.8rem, 7vw, 6rem);
+  line-height: 1.05;
+  max-width: 14ch;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeUp 1s 0.6s ease forwards;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--rust);
+}
+
+.hero-sub {
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  font-weight: 300;
+  max-width: 38ch;
+  color: rgba(245, 240, 232, 0.7);
+  margin-bottom: 3rem;
+  opacity: 0;
+  animation: fadeUp 1s 0.9s ease forwards;
+}
+
+.scroll-cue {
+  opacity: 0;
+  animation: fadeUp 1s 1.4s ease forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(245, 240, 232, 0.35);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.scroll-line {
+  width: 1px;
+  height: 50px;
+  background: linear-gradient(to bottom, rgba(196, 75, 40, 0.6), transparent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ============ STAT COUNTER ============ */
+.stat-band {
+  background: var(--rust);
+  color: var(--cream);
+  padding: 4rem 2rem;
+  display: flex;
+  justify-content: center;
+  gap: clamp(2rem, 6vw, 6rem);
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.stat-band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='rgba(0,0,0,0.08)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.stat-item {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-number {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(2.8rem, 5vw, 4.5rem);
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+.stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  max-width: 16ch;
+}
+
+/* ============ SECTIONS ============ */
+.section {
+  padding: clamp(5rem, 10vw, 10rem) clamp(1.5rem, 5vw, 4rem);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--faint-line);
+}
+
+.section h2 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  line-height: 1.15;
+  margin-bottom: 2rem;
+  max-width: 20ch;
+}
+
+.section h2 em {
+  font-style: italic;
+  color: var(--rust);
+}
+
+.section-body {
+  font-size: 1.1rem;
+  line-height: 1.85;
+  color: var(--slate);
+  max-width: 680px;
+}
+
+.section-body p + p {
+  margin-top: 1.5rem;
+}
+
+/* ============ PULL QUOTE ============ */
+.pull-quote {
+  padding: clamp(4rem, 8vw, 8rem) 2rem;
+  text-align: center;
+  position: relative;
+  background: var(--cream);
+}
+
+.pull-quote::before {
+  content: '"';
+  font-family: 'Playfair Display', serif;
+  font-size: 14rem;
+  color: var(--rust);
+  opacity: 0.1;
+  position: absolute;
+  top: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.pull-quote blockquote {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.5;
+  max-width: 32ch;
+  margin: 0 auto;
+  color: var(--ink);
+}
+
+.pull-quote cite {
+  display: block;
+  margin-top: 1.5rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  font-style: normal;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--light-slate);
+}
+
+/* ============ TWO TIER / LUXURY SECTION ============ */
+.two-tier {
+  background: var(--ink);
+  color: var(--cream);
+  padding: clamp(5rem, 10vw, 10rem) clamp(1.5rem, 5vw, 4rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.two-tier::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(212, 162, 78, 0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.two-tier-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.two-tier .section-label { color: var(--gold); border-bottom-color: rgba(245, 240, 232, 0.1); }
+
+.two-tier h2 em { color: var(--gold); }
+
+.two-tier .section-body { color: rgba(245, 240, 232, 0.75); }
+
+.divide-visual {
+  margin: 3rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.divide-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.divide-bar.wealthy {
+  background: var(--gold);
+}
+
+.divide-bar.marginalized {
+  background: rgba(245, 240, 232, 0.15);
+}
+
+.divide-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.divide-label.wealthy { color: var(--gold); }
+.divide-label.marginalized { color: rgba(245, 240, 232, 0.4); }
+
+/* ============ MULTIPLIER / IMPACT ============ */
+.multiplier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.multiplier-card {
+  background: var(--cream);
+  border-radius: 2px;
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.multiplier-card:hover {
+  transform: translateY(-4px);
+}
+
+.multiplier-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--rust);
+}
+
+.mc-number {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: 2.8rem;
+  color: var(--rust);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.mc-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--light-slate);
+  margin-bottom: 1rem;
+}
+
+.mc-body {
+  font-size: 0.95rem;
+  color: var(--slate);
+  line-height: 1.6;
+}
+
+/* ============ PIPELINE SECTION ============ */
+.pipeline {
+  background: linear-gradient(180deg, var(--warm-white) 0%, var(--cream) 100%);
+  padding: clamp(5rem, 10vw, 10rem) clamp(1.5rem, 5vw, 4rem);
+}
+
+.pipeline-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pipeline-flow {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-top: 3rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pipeline-node {
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.pipeline-node:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  right: -0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.4rem;
+  color: var(--rust);
+  opacity: 0.5;
+  z-index: 2;
+}
+
+.pn-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin: 0 auto 1rem;
+}
+
+.pn-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.pn-desc {
+  font-size: 0.85rem;
+  color: var(--light-slate);
+  line-height: 1.5;
+}
+
+.pipeline-break {
+  background: var(--rust);
+  color: white;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 2px;
+  align-self: center;
+  margin: 0 0.5rem;
+  position: relative;
+  white-space: nowrap;
+}
+
+/* ============ CTA ============ */
+.cta {
+  background: var(--ink);
+  color: var(--cream);
+  padding: clamp(6rem, 12vw, 12rem) 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 70%, rgba(196, 75, 40, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 30%, rgba(212, 162, 78, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.cta h2 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  line-height: 1.15;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.cta h2 em { color: var(--rust); font-style: italic; }
+
+.cta p {
+  font-size: 1.15rem;
+  font-weight: 300;
+  color: rgba(245, 240, 232, 0.7);
+  max-width: 42ch;
+  margin: 0 auto 3rem;
+  line-height: 1.7;
+  position: relative;
+}
+
+.cta-btn {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cream);
+  border: 1px solid var(--rust);
+  background: var(--rust);
+  padding: 1.1rem 3rem;
+  text-decoration: none;
+  transition: all 0.4s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.cta-btn:hover {
+  background: transparent;
+  border-color: var(--cream);
+}
+
+.cta-btn + .cta-btn {
+  margin-left: 1rem;
+  background: transparent;
+  border-color: rgba(245, 240, 232, 0.3);
+}
+
+.cta-btn + .cta-btn:hover {
+  border-color: var(--cream);
+}
+
+/* ============ ANIMATIONS ============ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Scroll-triggered reveals */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.15s; }
+.reveal-delay-2 { transition-delay: 0.3s; }
+.reveal-delay-3 { transition-delay: 0.45s; }
+.reveal-delay-4 { transition-delay: 0.6s; }
+
+/* Counter animation */
+.count-up {
+  display: inline-block;
+}
+
+/* ============ PROGRESS BAR ============ */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: var(--rust);
+  z-index: 1000;
+  transition: width 0.1s linear;
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+  .stat-band { gap: 2rem; padding: 3rem 1.5rem; }
+  .pipeline-node:not(:last-child)::after { display: none; }
+  .pipeline-flow { flex-direction: column; align-items: center; }
+  .pipeline-break { margin: 0.5rem 0; }
+  .cta-btn + .cta-btn { margin-left: 0; margin-top: 1rem; }
+  .divide-visual { flex-direction: column; gap: 0.8rem; }
+  .divide-bar { width: 100%; height: 3px; }
+}
+
+/* ============ GRAIN OVERLAY ============ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+</style>
+</head>
+<body>
+
+<!-- Reading Progress -->
+<div class="reading-progress" id="progress"></div>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-stat-bg">69%</div>
+  <div class="hero-label">A crisis hiding in plain sight</div>
+  <h1>We Are <em>Failing</em> Our Children</h1>
+  <p class="hero-sub">69% of 4th graders in America cannot read proficiently. This is not their failure. It is ours.</p>
+  <div class="scroll-cue">
+    <span>Scroll to learn why</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ============ STAT BAND ============ -->
+<section class="stat-band">
+  <div class="stat-item reveal">
+    <div class="stat-number"><span class="count-up" data-target="69">0</span>%</div>
+    <div class="stat-label">4th graders below proficiency</div>
+  </div>
+  <div class="stat-item reveal reveal-delay-1">
+    <div class="stat-number"><span class="count-up" data-target="11">0</span>%</div>
+    <div class="stat-label">Teachers prepared to teach reading</div>
+  </div>
+  <div class="stat-item reveal reveal-delay-2">
+    <div class="stat-number"><span class="count-up" data-target="52">0</span>%</div>
+    <div class="stat-label">Children of color not at basic level</div>
+  </div>
+  <div class="stat-item reveal reveal-delay-3">
+    <div class="stat-number">4×</div>
+    <div class="stat-label">More likely to drop out</div>
+  </div>
+</section>
+
+<!-- ============ SYSTEMIC BETRAYAL ============ -->
+<section class="section">
+  <div class="section-label reveal">01 — The Systemic Betrayal</div>
+  <h2 class="reveal">Teachers Are Being Sent to the Front Lines <em>Unarmed</em></h2>
+  <div class="section-body reveal">
+    <p>The most heartbreaking hidden truth: the literacy crisis is not a failure of our children. It is a catastrophic failure of how our society prepares educators. Only 11% of teachers graduate from their preparation programs feeling "completely prepared" to teach early reading.</p>
+    <p>We ask them to do the most important job in civilization, then give them almost nothing to do it with. CLF steps into that gap, arming dedicated, well-meaning teachers with evidence-based tools they were never given, rescuing them from a systemic betrayal that was never their fault.</p>
+  </div>
+</section>
+
+<!-- ============ PULL QUOTE ============ -->
+<div class="pull-quote reveal">
+  <blockquote>We are punishing children for neurological differences they cannot control.</blockquote>
+  <cite>1 in 5 people have invisible hurdles like dyslexia</cite>
+</div>
+
+<!-- ============ TWO-TIER REALITY ============ -->
+<section class="two-tier">
+  <div class="two-tier-inner">
+    <div class="section-label reveal">02 — The Two-Tier Reality</div>
+    <h2 class="reveal">Literacy Has Quietly Become a <em>Luxury Good</em></h2>
+    <div class="section-body reveal">
+      <p>There is an unspoken, two-tiered educational reality in America. When standard classroom instruction fails, families with financial resources quietly spend thousands on private tutors and specialized schools to save their children's futures.</p>
+      <p>Meanwhile, marginalized communities are trapped in a system without a safety net. For these children, core classroom instruction is the only lifeline. CLF removes the financial barriers, placing the "gold standard" of literacy instruction directly into everyday classrooms and democratizing what was once a privilege reserved for those who could afford it.</p>
+    </div>
+    <div class="divide-visual reveal">
+      <span class="divide-label wealthy">Wealthy families: private tutors</span>
+      <div class="divide-bar wealthy"></div>
+      <div class="divide-bar marginalized"></div>
+      <span class="divide-label marginalized">Everyone else: left behind</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TEACHER-FIRST MULTIPLIER ============ -->
+<section class="section">
+  <div class="section-label reveal">03 — The Multiplier Effect</div>
+  <h2 class="reveal">One Teacher. <em>Thousands</em> of Lives.</h2>
+  <div class="section-body reveal">
+    <p>Most charitable interventions focus on individually tutoring struggling children. It is well-intentioned, but mathematically impossible to scale. CLF found the ultimate leverage point: the educator. A single trained teacher uses these skills for the rest of their career, compounding impact year after year.</p>
+  </div>
+  <div class="multiplier-grid">
+    <div class="multiplier-card reveal">
+      <div class="mc-number">76</div>
+      <div class="mc-label">Teachers Trained</div>
+      <div class="mc-body">Intensely trained in the science of reading through 2,411 hours of professional development.</div>
+    </div>
+    <div class="multiplier-card reveal reveal-delay-1">
+      <div class="mc-number">3,083</div>
+      <div class="mc-label">Students Reached / Year</div>
+      <div class="mc-body">Every single year, across 57 schools, these teachers transform lives at scale.</div>
+    </div>
+    <div class="multiplier-card reveal reveal-delay-2">
+      <div class="mc-number">∞</div>
+      <div class="mc-label">Compounding Impact</div>
+      <div class="mc-body">A permanent structural upgrade to a school's ecosystem that benefits thousands of unseen children for decades.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PIPELINE ============ -->
+<section class="pipeline">
+  <div class="pipeline-inner">
+    <div class="section-label reveal">04 — Upstream Justice</div>
+    <h2 class="reveal">Dismantling the School-to-Prison Pipeline <em>at Its Root</em></h2>
+    <div class="section-body reveal">
+      <p>The inability to read by age eight is quite literally a predictor of incarceration. Students who miss the third-grade reading milestone are four times more likely to drop out and have a significantly higher likelihood of entering the juvenile justice system. CLF's work is one of the most potent, upstream forms of criminal justice reform available.</p>
+    </div>
+    <div class="pipeline-flow reveal">
+      <div class="pipeline-node">
+        <div class="pn-icon">📖</div>
+        <div class="pn-title">Can't Read by 8</div>
+        <div class="pn-desc">Struggling readers fall further behind every year</div>
+      </div>
+      <div class="pipeline-node">
+        <div class="pn-icon">📉</div>
+        <div class="pn-title">4× Dropout Risk</div>
+        <div class="pn-desc">Missing 3rd grade reading milestones</div>
+      </div>
+      <div class="pipeline-node">
+        <div class="pn-icon">⚖️</div>
+        <div class="pn-title">Justice System</div>
+        <div class="pn-desc">Higher likelihood of incarceration</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top: 2.5rem;" class="reveal">
+      <div class="pipeline-break">CLF INTERVENES HERE ↑</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta">
+  <h2 class="reveal">Every Child Deserves<br>the Chance to <em>Read</em></h2>
+  <p class="reveal">CLF is not just teaching reading. They are rewriting futures, breaking cycles, and building a more just world, one classroom at a time.</p>
+  <div class="reveal">
+    <a href="https://thecfl.org" target="_blank" class="cta-btn">Support CLF</a>
+    <a href="https://thecfl.org" target="_blank" class="cta-btn">Learn More</a>
+  </div>
+</section>
+
+<script>
+// ============ SCROLL PROGRESS ============
+const progressBar = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = (scrollTop / docHeight) * 100;
+  progressBar.style.width = progress + '%';
+});
+
+// ============ SCROLL REVEAL ============
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      // Trigger counters
+      const counters = entry.target.querySelectorAll('.count-up');
+      counters.forEach(counter => animateCounter(counter));
+    }
+  });
+}, { threshold: 0.15 });
+
+reveals.forEach(el => observer.observe(el));
+
+// ============ COUNTER ANIMATION ============
+function animateCounter(el) {
+  if (el.dataset.animated) return;
+  el.dataset.animated = 'true';
+  const target = parseInt(el.dataset.target);
+  const duration = 1800;
+  const start = performance.now();
+
+  function update(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out cubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(target * eased);
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+</script>
+
+</body>
+</html>
